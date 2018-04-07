@@ -1,0 +1,221 @@
+"use strict";
+/**
+ * Copyright 2017 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+const is = require("is");
+// import * as cls from './cls';
+const constants_1 = require("./constants");
+const trace_labels_1 = require("./trace-labels");
+const TracingPolicy = require("./tracing-policy");
+const util = require("./util");
+/**
+ * Type guard that returns whether an object is a string or not.
+ */
+// tslint:disable-next-line:no-any
+function isString(obj) {
+    return is.string(obj);
+}
+/**
+ * TraceAgent exposes a number of methods to create trace spans and propagate
+ * trace context across asynchronous boundaries.
+ */
+class TraceAgent {
+    /**
+     * Constructs a new TraceAgent instance.
+     * @param name A string identifying this TraceAgent instance in logs.
+     */
+    constructor(name) {
+        this.constants = constants_1.Constants;
+        this.labels = trace_labels_1.TraceLabels;
+        this.spanTypes = constants_1.SpanDataType;
+        this.logger = null;
+        this.config = null;
+        // TODO(kjin): Make this private.
+        this.policy = null;
+        // private namespace: cls.Namespace|null = null;
+        this.enabled = false;
+        this.pluginName = name;
+        this.disable(); // disable immediately
+    }
+    /**
+     * Enables this instance. This function is only for internal use and
+     * unit tests. A separate TraceWriter instance should be initialized
+     * beforehand.
+     * @param logger A logger object.
+     * @param config An object specifying how this instance should
+     * be configured.
+     * @private
+     */
+    enable(logger, config) {
+        this.logger = logger;
+        this.config = config;
+        this.policy = TracingPolicy.createTracePolicy(config);
+        // this.namespace = cls.getNamespace();
+        this.enabled = true;
+    }
+    /**
+     * Disable this instance. This function is only for internal use and
+     * unit tests.
+     * @private
+     */
+    disable() {
+        // Even though plugins should be unpatched, setting a new policy that
+        // never generates traces allows persisting wrapped methods (either because
+        // they are already instantiated or the plugin doesn't unpatch them) to
+        // short-circuit out of trace generation logic.
+        this.policy = new TracingPolicy.TraceNonePolicy();
+        // this.namespace = null;
+        this.enabled = false;
+    }
+    /**
+     * Returns whether the TraceAgent instance is active. This function is only
+     * for internal use and unit tests; under normal circumstances it will always
+     * return true.
+     * @private
+     */
+    isActive() {
+        // return !!this.namespace;
+        return this.enabled;
+    }
+    enhancedDatabaseReportingEnabled() {
+        return !!this.config && this.config.enhancedDatabaseReporting;
+    }
+    // runInRootSpan<T>(options: RootSpanOptions, fn: (span: SpanData) => T): T {
+    //   if (!this.isActive()) {
+    //     return fn(UNTRACED_SPAN);
+    //   }
+    //
+    //   // TODO validate options
+    //   // Don't create a root span if we are already in a root span
+    //   if (cls.getRootContext().type === SpanDataType.ROOT) {
+    //     this.logger!.warn(`TraceApi#runInRootSpan: [${
+    //         this.pluginName}] Cannot create nested root spans.`);
+    //     return fn(UNCORRELATED_SPAN);
+    //   }
+    //
+    //   return this.namespace!.runAndReturn(() => {
+    //     // Attempt to read incoming trace context.
+    //     let incomingTraceContext: IncomingTraceContext = {};
+    //     if (isString(options.traceContext) && !this.config!.ignoreContextHeader) {
+    //       const parsedContext = util.parseContextFromHeader(options.traceContext);
+    //       if (parsedContext) {
+    //         incomingTraceContext = parsedContext;
+    //       }
+    //     }
+    //
+    //     // Consult the trace policy, and don't create a root span if the trace
+    //     // policy disallows it.
+    //     const locallyAllowed =
+    //         this.policy!.shouldTrace(Date.now(), options.url || '');
+    //     const remotelyAllowed = incomingTraceContext.options === undefined ||
+    //         !!(incomingTraceContext.options &
+    //            Constants.TRACE_OPTIONS_TRACE_ENABLED);
+    //     if (!locallyAllowed || !remotelyAllowed) {
+    //       cls.setRootContext(UNTRACED_SPAN);
+    //       return fn(UNTRACED_SPAN);
+    //     }
+    //
+    //     // Create a new root span, and invoke fn with it.
+    //     const traceId =
+    //         incomingTraceContext.traceId || (uuid.v4().split('-').join(''));
+    //     const parentId = incomingTraceContext.spanId || '0';
+    //     const rootContext = new RootSpanData(
+    //         {projectId: '', traceId, spans: []}, /* Trace object */
+    //         options.name,                        /* Span name */
+    //         parentId,                            /* Parent's span ID */
+    //         cls.ROOT_SPAN_STACK_OFFSET + (options.skipFrames || 0));
+    //     cls.setRootContext(rootContext);
+    //     return fn(rootContext);
+    //   });
+    // }
+    // getCurrentContextId(): string|null {
+    //   if (!this.isActive()) {
+    //     return null;
+    //   }
+    //
+    //   const rootSpan = cls.getRootContext();
+    //   if (rootSpan.type === SpanDataType.ROOT) {
+    //     return rootSpan.trace.traceId;
+    //   }
+    //   return null;
+    // }
+    getWriterProjectId() {
+        if (this.config) {
+            return this.config.projectId || null;
+        }
+        else {
+            return null;
+        }
+    }
+    // createChildSpan(options: SpanOptions): SpanData {
+    //   if (!this.isActive()) {
+    //     return UNTRACED_SPAN;
+    //   }
+    //
+    //   const rootSpan = cls.getRootContext();
+    //   if (rootSpan.type === SpanDataType.ROOT) {
+    //     if (!!rootSpan.span.endTime) {
+    //       // A closed root span suggests that we either have context confusion or
+    //       // some work is being done after the root request has been completed.
+    //       // The first case could lead to a memory leak, if somehow all spans end
+    //       // up getting misattributed to the same root span – we get a root span
+    //       // with continuously growing number of child spans. The second case
+    //       // seems to have some value, but isn't representable. The user probably
+    //       // needs a custom outer span that encompasses the entirety of work.
+    //       this.logger!.warn(`TraceApi#createChildspan: [${
+    //           this.pluginName}] Creating phantom child span [${
+    //           options.name}] because root span [${
+    //           rootSpan.span.name}] was already closed.`);
+    //       return UNCORRELATED_SPAN;
+    //     }
+    //     // Create a new child span and return it.
+    //     options = options || {name: ''};
+    //     const skipFrames = options.skipFrames ? options.skipFrames + 1 : 1;
+    //     const childContext = new ChildSpanData(
+    //         rootSpan.trace,       /* Trace object */
+    //         options.name,         /* Span name */
+    //         rootSpan.span.spanId, /* Parent's span ID */
+    //         skipFrames);          /* # of frames to skip in stack trace */
+    //     return childContext;
+    //   } else if (rootSpan.type === SpanDataType.UNTRACED) {
+    //     // Context wasn't lost, but there's no root span, indicating that this
+    //     // request should not be traced.
+    //     return UNTRACED_SPAN;
+    //   } else {
+    //     // Context was lost.
+    //     this.logger!.warn(`TraceApi#createChildspan: [${
+    //         this.pluginName}] Creating phantom child span [${
+    //         options.name}] because there is no root span.`);
+    //     return UNCORRELATED_SPAN;
+    //   }
+    // }
+    isRealSpan(span) {
+        return span.type === constants_1.SpanDataType.ROOT || span.type === constants_1.SpanDataType.CHILD;
+    }
+    getResponseTraceContext(incomingTraceContext, isTraced) {
+        if (!this.isActive() || !incomingTraceContext) {
+            return '';
+        }
+        const traceContext = util.parseContextFromHeader(incomingTraceContext);
+        if (!traceContext) {
+            return '';
+        }
+        traceContext.options = (traceContext.options || 0) & (isTraced ? 1 : 0);
+        return util.generateTraceContext(traceContext);
+    }
+}
+exports.TraceAgent = TraceAgent;
+//# sourceMappingURL=trace-api.js.map

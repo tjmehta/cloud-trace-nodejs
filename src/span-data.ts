@@ -16,6 +16,7 @@
 
 import * as crypto from 'crypto';
 import * as util from 'util';
+import * as uuid from 'uuid';
 
 import {Constants, SpanDataType} from './constants';
 import {SpanData as SpanData} from './plugin-types';
@@ -67,9 +68,10 @@ export abstract class BaseSpanData implements SpanData {
       endTime: '',
       spanId: randomSpanId(),
       kind: SpanKind.SPAN_KIND_UNSPECIFIED,
-      parentSpanId,
+      parentSpanId: parentSpanId || '0', // '0' means no parent
       labels: {}
     };
+    this.trace.traceId = this.trace.traceId || uuid.v4().split('-').join('')
     this.trace.spans.push(this.span);
 
     const stackFrames = traceUtil.createStackTrace(

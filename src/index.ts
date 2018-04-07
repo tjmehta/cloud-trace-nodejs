@@ -23,7 +23,7 @@ if (require('semver').satisfies(process.version, '<8') ||
   require('continuation-local-storage');
 }
 
-import * as cls from './cls';
+// import * as cls from './cls';
 import * as common from '@google-cloud/common';
 import {Constants} from './constants';
 import {Config, defaultConfig} from './config';
@@ -119,7 +119,7 @@ function stop() {
     } catch {
       // Plugin loader wasn't even created. No need to de-activate
     }
-    cls.destroyNamespace();
+    // cls.destroyNamespace();
   }
 }
 
@@ -155,17 +155,17 @@ export function start(projectConfig?: Config): PluginTypes.TraceAgent {
     tag: '@google-cloud/trace-agent'
   });
 
-  if (modulesLoadedBeforeTrace.length > 0) {
-    logger.error(
-        'TraceAgent#start: Tracing might not work as the following modules',
-        'were loaded before the trace agent was initialized:',
-        `[${modulesLoadedBeforeTrace.sort().join(', ')}]`);
-    // Stop storing these entries in memory
-    filesLoadedBeforeTrace.length = 0;
-    modulesLoadedBeforeTrace.length = 0;
-  }
+  // if (modulesLoadedBeforeTrace.length > 0) {
+  //   logger.error(
+  //       'TraceAgent#start: Tracing might not work as the following modules',
+  //       'were loaded before the trace agent was initialized:',
+  //       `[${modulesLoadedBeforeTrace.sort().join(', ')}]`);
+  //   // Stop storing these entries in memory
+  //   filesLoadedBeforeTrace.length = 0;
+  //   modulesLoadedBeforeTrace.length = 0;
+  // }
   // CLS namespace for context propagation
-  cls.createNamespace();
+  // cls.createNamespace();
   traceWriter.create(logger, config).initialize((err) => {
     if (err) {
       stop();
@@ -173,7 +173,7 @@ export function start(projectConfig?: Config): PluginTypes.TraceAgent {
   });
 
   traceAgent.enable(logger, config);
-  pluginLoader.create(logger, config).activate();
+  // pluginLoader.create(logger, config).activate();
 
   if (typeof config.projectId !== 'string' &&
       typeof config.projectId !== 'undefined') {
