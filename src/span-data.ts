@@ -19,6 +19,7 @@ import * as util from 'util';
 import * as uuid from 'uuid';
 
 import {Constants, SpanDataType} from './constants';
+import {get as getTraceAgent, getConfig} from './index';
 import {SpanData as SpanData} from './plugin-types';
 import {SpanKind, Trace, TraceSpan} from './trace';
 import {TraceLabels} from './trace-labels';
@@ -73,9 +74,10 @@ export abstract class BaseSpanData implements SpanData {
     };
     this.trace.traceId = this.trace.traceId || uuid.v4().split('-').join('')
     this.trace.spans.push(this.span);
-
+    const config = getConfig()
+    if (!config) throw new Error('not initialized')
     const stackFrames = traceUtil.createStackTrace(
-        traceWriter.get().getConfig().stackTraceLimit, skipFrames,
+        config.stackTraceLimit, skipFrames,
         this.constructor);
     if (stackFrames.length > 0) {
       // Developer note: This is not equivalent to using addLabel, because the
@@ -99,8 +101,10 @@ export abstract class BaseSpanData implements SpanData {
   addLabel(key: string, value: any) {
     const k = traceUtil.truncate(key, Constants.TRACE_SERVICE_LABEL_KEY_LIMIT);
     const stringValue = typeof value === 'string' ? value : util.inspect(value);
+    const config = getConfig()
+    if (!config) throw new Error('not initialized')
     const v = traceUtil.truncate(
-        stringValue, traceWriter.get().getConfig().maximumLabelValueSize);
+        stringValue, config.maximumLabelValueSize);
     this.span.labels[k] = v;
   }
 

@@ -50,13 +50,13 @@ for (let i = 0; i < filesLoadedBeforeTrace.length; i++) {
   }
 }
 
-interface TopLevelConfig {
+export interface TopLevelConfig {
   enabled: boolean;
   logLevel: number;
 }
 
 // PluginLoaderConfig extends TraceAgentConfig
-type NormalizedConfig = TraceWriterConfig&PluginLoaderConfig&TopLevelConfig;
+export type NormalizedConfig = TraceWriterConfig&PluginLoaderConfig&TopLevelConfig;
 
 /**
  * Normalizes the user-provided configuration object by adding default values
@@ -135,9 +135,10 @@ function stop() {
  * @example
  * trace.start();
  */
+let config: NormalizedConfig | null = null
 export function start(projectConfig?: Config): PluginTypes.TraceAgent {
-  const config = initConfig(projectConfig || {});
-
+  config = initConfig(projectConfig || {});
+  // @ts-ignore
   if (traceAgent.isActive() && !config[FORCE_NEW]) {  // already started.
     throw new Error('Cannot call start on an already started agent.');
   } else if (traceAgent.isActive()) {
@@ -191,8 +192,12 @@ export function start(projectConfig?: Config): PluginTypes.TraceAgent {
   return traceAgent;
 }
 
-export function get(): PluginTypes.TraceAgent {
+export function get(): TraceAgent {
   return traceAgent;
+}
+
+export function getConfig (): NormalizedConfig | null {
+  return config;
 }
 
 // If the module was --require'd from the command line, start the agent.

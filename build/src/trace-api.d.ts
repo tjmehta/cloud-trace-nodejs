@@ -58,9 +58,9 @@ export declare class TraceAgent implements TraceAgentInterface {
     readonly spanTypes: typeof SpanDataType;
     private pluginName;
     private logger;
-    private config;
     policy: TracingPolicy.TracePolicy | null;
     private enabled;
+    config: TraceAgentConfig | null;
     /**
      * Constructs a new TraceAgent instance.
      * @param name A string identifying this TraceAgent instance in logs.

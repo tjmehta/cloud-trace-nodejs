@@ -1,17 +1,14 @@
 import { Config } from './config';
 import * as PluginTypes from './plugin-types';
+import { PluginLoaderConfig } from './trace-plugin-loader';
+import { TraceAgent } from './trace-api';
+import { TraceWriterConfig } from './trace-writer';
 export { Config, PluginTypes };
-/**
- * Start the Trace agent that will make your application available for
- * tracing with Stackdriver Trace.
- *
- * @param config - Trace configuration
- *
- * @resource [Introductory video]{@link
- * https://www.youtube.com/watch?v=NCFDqeo7AeY}
- *
- * @example
- * trace.start();
- */
+export interface TopLevelConfig {
+    enabled: boolean;
+    logLevel: number;
+}
+export declare type NormalizedConfig = TraceWriterConfig & PluginLoaderConfig & TopLevelConfig;
 export declare function start(projectConfig?: Config): PluginTypes.TraceAgent;
-export declare function get(): PluginTypes.TraceAgent;
+export declare function get(): TraceAgent;
+export declare function getConfig(): NormalizedConfig | null;

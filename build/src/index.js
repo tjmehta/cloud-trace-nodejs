@@ -116,8 +116,10 @@ function stop() {
  * @example
  * trace.start();
  */
+let config = null;
 function start(projectConfig) {
-    const config = initConfig(projectConfig || {});
+    config = initConfig(projectConfig || {});
+    // @ts-ignore
     if (traceAgent.isActive() && !config[util_1.FORCE_NEW]) {
         throw new Error('Cannot call start on an already started agent.');
     }
@@ -167,6 +169,10 @@ function get() {
     return traceAgent;
 }
 exports.get = get;
+function getConfig() {
+    return config;
+}
+exports.getConfig = getConfig;
 // If the module was --require'd from the command line, start the agent.
 if (module.parent && module.parent.id === 'internal/preload') {
     start();

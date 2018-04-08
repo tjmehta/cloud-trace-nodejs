@@ -63,11 +63,12 @@ export class TraceAgent implements TraceAgentInterface {
 
   private pluginName: string;
   private logger: Logger|null = null;
-  private config: TraceAgentConfig|null = null;
   // TODO(kjin): Make this private.
   policy: TracingPolicy.TracePolicy|null = null;
   // private namespace: cls.Namespace|null = null;
   private enabled: boolean = false
+
+  public config: TraceAgentConfig|null = null;
 
   /**
    * Constructs a new TraceAgent instance.

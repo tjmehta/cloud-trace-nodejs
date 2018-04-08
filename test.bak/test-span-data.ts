@@ -58,6 +58,7 @@ describe('SpanData', function() {
   it('generates unique numeric span ID strings', function() {
     cls.getNamespace().run(function() {
       var spans = [];
+      // @ts-ignore
       var spanIds = new Set<string>();
       var rootSpanData = createRootSpanData('hi');
       var numSpanIdsToCheck = 5;
@@ -96,6 +97,7 @@ describe('SpanData', function() {
   it('serializes symbol labels correctly', function() {
     cls.getNamespace().run(function() {
       var spanData = createRootSpanData('name', 1, 2);
+      // @ts-ignore
       spanData.addLabel('a', Symbol('b'));
       assert.strictEqual(spanData.span.labels.a, 'Symbol(b)');
     });

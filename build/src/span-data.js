@@ -19,6 +19,7 @@ const crypto = require("crypto");
 const util = require("util");
 const uuid = require("uuid");
 const constants_1 = require("./constants");
+const index_1 = require("./index");
 const trace_1 = require("./trace");
 const trace_labels_1 = require("./trace-labels");
 const trace_writer_1 = require("./trace-writer");
@@ -63,7 +64,10 @@ class BaseSpanData {
         };
         this.trace.traceId = this.trace.traceId || uuid.v4().split('-').join('');
         this.trace.spans.push(this.span);
-        const stackFrames = traceUtil.createStackTrace(trace_writer_1.traceWriter.get().getConfig().stackTraceLimit, skipFrames, this.constructor);
+        const config = index_1.getConfig();
+        if (!config)
+            throw new Error('not initialized');
+        const stackFrames = traceUtil.createStackTrace(config.stackTraceLimit, skipFrames, this.constructor);
         if (stackFrames.length > 0) {
             // Developer note: This is not equivalent to using addLabel, because the
             // stack trace label has its own size constraints.
@@ -82,7 +86,10 @@ class BaseSpanData {
     addLabel(key, value) {
         const k = traceUtil.truncate(key, constants_1.Constants.TRACE_SERVICE_LABEL_KEY_LIMIT);
         const stringValue = typeof value === 'string' ? value : util.inspect(value);
-        const v = traceUtil.truncate(stringValue, trace_writer_1.traceWriter.get().getConfig().maximumLabelValueSize);
+        const config = index_1.getConfig();
+        if (!config)
+            throw new Error('not initialized');
+        const v = traceUtil.truncate(stringValue, config.maximumLabelValueSize);
         this.span.labels[k] = v;
     }
     endSpan() {

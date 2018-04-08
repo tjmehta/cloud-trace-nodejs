@@ -42,11 +42,11 @@ class TraceAgent {
         this.labels = trace_labels_1.TraceLabels;
         this.spanTypes = constants_1.SpanDataType;
         this.logger = null;
-        this.config = null;
         // TODO(kjin): Make this private.
         this.policy = null;
         // private namespace: cls.Namespace|null = null;
         this.enabled = false;
+        this.config = null;
         this.pluginName = name;
         this.disable(); // disable immediately
     }
