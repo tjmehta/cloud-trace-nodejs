@@ -18,10 +18,10 @@ const filesLoadedBeforeTrace = Object.keys(require.cache);
 
 // Load continuation-local-storage first to ensure the core async APIs get
 // patched before any user-land modules get loaded.
-if (require('semver').satisfies(process.version, '<8') ||
-    !process.env.GCLOUD_TRACE_NEW_CONTEXT) {
-  require('continuation-local-storage');
-}
+// if (require('semver').satisfies(process.version, '<8') ||
+//     !process.env.GCLOUD_TRACE_NEW_CONTEXT) {
+//   require('continuation-local-storage');
+// }
 
 // import * as cls from './cls';
 import * as common from '@google-cloud/common';
