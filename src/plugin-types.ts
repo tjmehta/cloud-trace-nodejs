@@ -105,7 +105,7 @@ export interface TraceAgent {
    * a phantom SpanData object.
    * @returns The return value of calling fn.
    */
-  runInRootSpan<T>(options: RootSpanOptions, fn: (span: SpanData) => T): T;
+  // runInRootSpan<T>(options: RootSpanOptions, fn: (span: SpanData) => T): T;
 
   /**
    * Returns a unique identifier for the currently active context. This can be
@@ -115,7 +115,7 @@ export interface TraceAgent {
    * guarantee is that the value would unique for every root span.
    * @returns an id for the current context, or null if there is none
    */
-  getCurrentContextId(): string|null;
+  // getCurrentContextId(): string|null;
 
   /**
    * Returns the projectId that was either configured or auto-discovered by the
@@ -132,7 +132,7 @@ export interface TraceAgent {
    * span is created and propagated.
    * @returns A new SpanData object.
    */
-  createChildSpan(options: SpanOptions): SpanData;
+  // createChildSpan(options: SpanOptions): SpanData;
 
   /**
    * Returns whether a given span is real or not by checking its SpanDataType.
@@ -163,7 +163,7 @@ export interface TraceAgent {
    * handler).
    * @param fn A function to which to bind the trace context.
    */
-  wrap<T>(fn: Func<T>): Func<T>;
+  // wrap<T>(fn: Func<T>): Func<T>;
 
   /**
    * Binds the trace context to the given event emitter.
@@ -172,7 +172,7 @@ export interface TraceAgent {
    * @param emitter An event emitter whose handlers should have
    * the trace context binded to them.
    */
-  wrapEmitter(emitter: NodeJS.EventEmitter): void;
+  // wrapEmitter(emitter: NodeJS.EventEmitter): void;
 
   readonly constants: typeof Constants;
   readonly labels: typeof TraceLabels;

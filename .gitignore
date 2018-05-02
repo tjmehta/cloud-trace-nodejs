@@ -4,7 +4,7 @@ npm-debug.log
 .DS_Store
 .nyc_output/
 .vscode/
-build/
+build/test
 *.tgz
 src/plugins/types/*
 !src/plugins/types/index.d.ts

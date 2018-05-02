@@ -18,12 +18,12 @@ const filesLoadedBeforeTrace = Object.keys(require.cache);
 
 // Load continuation-local-storage first to ensure the core async APIs get
 // patched before any user-land modules get loaded.
-if (require('semver').satisfies(process.version, '<8') ||
-    !process.env.GCLOUD_TRACE_NEW_CONTEXT) {
-  require('continuation-local-storage');
-}
+// if (require('semver').satisfies(process.version, '<8') ||
+//     !process.env.GCLOUD_TRACE_NEW_CONTEXT) {
+//   require('continuation-local-storage');
+// }
 
-import * as cls from './cls';
+// import * as cls from './cls';
 import * as common from '@google-cloud/common';
 import {Constants} from './constants';
 import {Config, defaultConfig} from './config';
@@ -50,13 +50,13 @@ for (let i = 0; i < filesLoadedBeforeTrace.length; i++) {
   }
 }
 
-interface TopLevelConfig {
+export interface TopLevelConfig {
   enabled: boolean;
   logLevel: number;
 }
 
 // PluginLoaderConfig extends TraceAgentConfig
-type NormalizedConfig = TraceWriterConfig&PluginLoaderConfig&TopLevelConfig;
+export type NormalizedConfig = TraceWriterConfig&PluginLoaderConfig&TopLevelConfig;
 
 /**
  * Normalizes the user-provided configuration object by adding default values
@@ -119,7 +119,7 @@ function stop() {
     } catch {
       // Plugin loader wasn't even created. No need to de-activate
     }
-    cls.destroyNamespace();
+    // cls.destroyNamespace();
   }
 }
 
@@ -135,9 +135,10 @@ function stop() {
  * @example
  * trace.start();
  */
+let config: NormalizedConfig | null = null
 export function start(projectConfig?: Config): PluginTypes.TraceAgent {
-  const config = initConfig(projectConfig || {});
-
+  config = initConfig(projectConfig || {});
+  // @ts-ignore
   if (traceAgent.isActive() && !config[FORCE_NEW]) {  // already started.
     throw new Error('Cannot call start on an already started agent.');
   } else if (traceAgent.isActive()) {
@@ -155,17 +156,17 @@ export function start(projectConfig?: Config): PluginTypes.TraceAgent {
     tag: '@google-cloud/trace-agent'
   });
 
-  if (modulesLoadedBeforeTrace.length > 0) {
-    logger.error(
-        'TraceAgent#start: Tracing might not work as the following modules',
-        'were loaded before the trace agent was initialized:',
-        `[${modulesLoadedBeforeTrace.sort().join(', ')}]`);
-    // Stop storing these entries in memory
-    filesLoadedBeforeTrace.length = 0;
-    modulesLoadedBeforeTrace.length = 0;
-  }
+  // if (modulesLoadedBeforeTrace.length > 0) {
+  //   logger.error(
+  //       'TraceAgent#start: Tracing might not work as the following modules',
+  //       'were loaded before the trace agent was initialized:',
+  //       `[${modulesLoadedBeforeTrace.sort().join(', ')}]`);
+  //   // Stop storing these entries in memory
+  //   filesLoadedBeforeTrace.length = 0;
+  //   modulesLoadedBeforeTrace.length = 0;
+  // }
   // CLS namespace for context propagation
-  cls.createNamespace();
+  // cls.createNamespace();
   traceWriter.create(logger, config).initialize((err) => {
     if (err) {
       stop();
@@ -173,7 +174,7 @@ export function start(projectConfig?: Config): PluginTypes.TraceAgent {
   });
 
   traceAgent.enable(logger, config);
-  pluginLoader.create(logger, config).activate();
+  // pluginLoader.create(logger, config).activate();
 
   if (typeof config.projectId !== 'string' &&
       typeof config.projectId !== 'undefined') {
@@ -191,8 +192,12 @@ export function start(projectConfig?: Config): PluginTypes.TraceAgent {
   return traceAgent;
 }
 
-export function get(): PluginTypes.TraceAgent {
+export function get(): TraceAgent {
   return traceAgent;
+}
+
+export function getConfig (): NormalizedConfig | null {
+  return config;
 }
 
 // If the module was --require'd from the command line, start the agent.
